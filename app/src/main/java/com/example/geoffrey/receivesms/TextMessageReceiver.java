@@ -1,6 +1,7 @@
 package com.example.geoffrey.receivesms;
 
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -24,10 +25,13 @@ public class TextMessageReceiver extends BroadcastReceiver {
         }
 
         for (SmsMessage msg:sms) {
-         ReceiveSMSActivity.updateMessageBox("\nFrom:"+msg.getOriginatingAddress()+"\n"+
-                "Message :" +msg.getMessageBody()+"\n");
+         ReceiveSMSActivity.updateMessageBox(msg.getOriginatingAddress());
         }
 
 //        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    public void saveSmsToInbox(SmsMessage sms) {
+        ContentValues values = new ContentValues();
     }
 }
