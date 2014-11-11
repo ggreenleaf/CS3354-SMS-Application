@@ -24,9 +24,9 @@ public class TextMessageReceiver extends BroadcastReceiver {
             sms[n] = SmsMessage.createFromPdu((byte[])messages[n]);
         }
 
-        for (SmsMessage msg:sms) {
-         ReceiveSMSActivity.updateMessageBox(msg.getOriginatingAddress());
-        }
+//        for (SmsMessage msg:sms) {
+//         ReceiveSMSActivity.updateMessageBox(msg.getOriginatingAddress());
+//        }
 
 //        throw new UnsupportedOperationException("Not yet implemented");
     }

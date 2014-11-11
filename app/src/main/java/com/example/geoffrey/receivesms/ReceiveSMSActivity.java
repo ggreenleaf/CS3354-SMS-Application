@@ -3,6 +3,7 @@ package com.example.geoffrey.receivesms;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
@@ -10,14 +11,20 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class ReceiveSMSActivity extends Activity {
 
     static TextView messageBox;
-
+    public static final int THREAD_ID = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,37 +32,45 @@ public class ReceiveSMSActivity extends Activity {
         messageBox = (TextView)findViewById(R.id.messageBox);
 
         Button viewMsgBtn = (Button) findViewById(R.id.viewMessages);
-
+        final ListView listview = (ListView) findViewById(R.id.convoListView);
+        ArrayList<String> list = new ArrayList<String>();
         //Listening to button event
+//        viewMsgBtn.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View arg0) {
+//                //Starting a new Intent
+//                Intent nextScreen = new Intent(getApplicationContext(),InboxActivity.class );
+//                nextScreen.putExtra("thread_id", "7");
+//                startActivity(nextScreen);
+//            }
+//        });
 
-        viewMsgBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View arg0) {
+        Cursor cur = getContentResolver().query(Uri.parse("content://sms/conversations"),null,null,null,null);
+        cur.moveToFirst();
+        do{
+           list.add(cur.getString(0));
+        }while(cur.moveToNext());
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_list_item_1,
+                list);
+        listview.setAdapter(adapter);
+
+        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String tid = (String) listview.getItemAtPosition(position);
                 //Starting a new Intent
-
                 Intent nextScreen = new Intent(getApplicationContext(),InboxActivity.class );
-
-             //   nextScreen.putExtra("address","address");
-
-//                Log.e("n", "name" + "." +"email");
-
+                nextScreen.putExtra("thread_id", tid);
                 startActivity(nextScreen);
             }
         });
     }
 
-    public static void updateMessageBox(String msg)
-    {
-        messageBox.append(msg);
-    }
 
-//    public void saveSMSToInbox(SmsMessage sms) {
-//        ContentValues values = new ContentValues();
-//        values.put("address", sms.getOriginatingAddress());
-//        values.put("body", sms.getDisplayMessageBody());
-//
-//        this.getContentResolver().insert(
-//                    Uri.parse("content:/sms/inbox"), values);
-//    }
+
+
+
+
+
 
 
 

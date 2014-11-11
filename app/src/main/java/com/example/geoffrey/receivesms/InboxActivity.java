@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Telephony;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,21 +14,34 @@ import android.widget.TextView;
 
 public class InboxActivity extends Activity {
     private static  TextView inbox;
-
+    private static final int SMS_ADDRESS = 2;
+    private static final int SMS_BODY = 12;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inbox);
+        Bundle b = getIntent().getExtras();
+        String tid = b.getString("thread_id");
         inbox = (TextView)findViewById(R.id.inboxView);
-        Cursor cur = getContentResolver().query(Uri.parse("content://sms/inbox"),null,null,null,null);
+        String [] mSelectionArgs =  {""};
+        String mSearchString = tid;
+
+        String mSelectionClause = "thread_id = ?";
+        mSelectionArgs[0] = mSearchString;
+
+    //Cursor cur = getContentResolver().query(Uri.parse("content://sms/inbox"),null,null,null,null);
+      Cursor cur = getContentResolver().query(Uri.parse("content://sms/inbox"),null,mSelectionClause,mSelectionArgs,null);
+
         cur.moveToFirst();
         do {
             String msgData = "";
             //idx 2= address idx 12 = "body"
-            msgData += "From: " +cur.getString(2)+"\n";
-            msgData += "Body: " + cur.getString(12) + "\n";
+            msgData += "From: " +cur.getString(SMS_ADDRESS)+"\n";
+            msgData += "Body: " + cur.getString(SMS_BODY) + "\n";
+
             inbox.append(msgData);
         }while(cur.moveToNext());
+
 
     }
 
