@@ -2,6 +2,7 @@ package com.example.geoffrey.receivesms;
 
 import android.app.Activity;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Telephony;
@@ -13,6 +14,8 @@ import android.widget.TextView;
 
 
 public class InboxActivity extends Activity {
+
+    private static String inboxUri = "content://sms/inbox";
     private static  TextView inbox;
     private static final int SMS_ADDRESS = 2;
     private static final int SMS_BODY = 12;
@@ -29,16 +32,15 @@ public class InboxActivity extends Activity {
         String mSelectionClause = "thread_id = ?";
         mSelectionArgs[0] = mSearchString;
 
-    //Cursor cur = getContentResolver().query(Uri.parse("content://sms/inbox"),null,null,null,null);
-      Cursor cur = getContentResolver().query(Uri.parse("content://sms/inbox"),null,mSelectionClause,mSelectionArgs,null);
+      Cursor cur = getContentResolver().query(Uri.parse(inboxUri),null,mSelectionClause,mSelectionArgs,null);
 
         cur.moveToFirst();
         do {
             String msgData = "";
             //idx 2= address idx 12 = "body"
-            msgData += "From: " +cur.getString(SMS_ADDRESS)+"\n";
             msgData += "Body: " + cur.getString(SMS_BODY) + "\n";
-
+            
+            inbox.setTextColor(Color.BLUE);
             inbox.append(msgData);
         }while(cur.moveToNext());
 
