@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
+import android.widget.Toast;
 
 public class TextMessageReceiver extends BroadcastReceiver {
     public TextMessageReceiver() {
@@ -16,7 +17,7 @@ public class TextMessageReceiver extends BroadcastReceiver {
         // TODO: This method is called when the BroadcastReceiver is receiving
         // an Intent broadcast.
         Bundle bundle = intent.getExtras();
-
+        //check for certain SMS_RECEIVED_ACTION
         Object[] messages=(Object[])bundle.get("pdus");
         SmsMessage[] sms = new SmsMessage[messages.length];
 
@@ -24,14 +25,9 @@ public class TextMessageReceiver extends BroadcastReceiver {
             sms[n] = SmsMessage.createFromPdu((byte[])messages[n]);
         }
 
-//        for (SmsMessage msg:sms) {
-//         ReceiveSMSActivity.updateMessageBox(msg.getOriginatingAddress());
-//        }
+         Toast.makeText(context,sms[0].getDisplayMessageBody(),Toast.LENGTH_SHORT ).show();
 
 //        throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    public void saveSmsToInbox(SmsMessage sms) {
-        ContentValues values = new ContentValues();
-    }
 }

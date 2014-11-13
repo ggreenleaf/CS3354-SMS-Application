@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
@@ -31,8 +32,8 @@ public class ReceiveSMSActivity extends Activity {
         setContentView(R.layout.activity_receive_sms);
         messageBox = (TextView)findViewById(R.id.messageBox);
 
-        Button viewMsgBtn = (Button) findViewById(R.id.viewMessages);
         final ListView listview = (ListView) findViewById(R.id.convoListView);
+        listview.setBackgroundColor(Color.BLACK);
         ArrayList<String> list = new ArrayList<String>();
         //Listening to button event
 //        viewMsgBtn.setOnClickListener(new View.OnClickListener() {
@@ -45,24 +46,39 @@ public class ReceiveSMSActivity extends Activity {
 //        });
 
         Cursor cur = getContentResolver().query(Uri.parse("content://sms/conversations"),null,null,null,null);
-        cur.moveToFirst();
-        do{
-           list.add(cur.getString(0));
-        }while(cur.moveToNext());
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),android.R.layout.simple_list_item_1,
-                list);
-        listview.setAdapter(adapter);
 
-        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String tid = (String) listview.getItemAtPosition(position);
-                //Starting a new Intent
-                Intent nextScreen = new Intent(getApplicationContext(),InboxActivity.class );
-                nextScreen.putExtra("thread_id", tid);
-                startActivity(nextScreen);
-            }
-        });
+        if (cur.getCount() == 0 ) {
+            cur.close();
+        } else {
+            cur.moveToFirst();
+            do {
+                String number = "";
+                String tid = cur.getString(0);
+                String[] sA = {tid};
+                Cursor curI = getContentResolver().query(Uri.parse("content://sms/inbox"), null, "thread_id = ?", sA, null);
+                if (curI.getCount() != 0) {
+                    curI.moveToFirst();
+                    number = curI.getString(2);
+                }
+                curI.close();
+                list.add(number);
+            } while (cur.moveToNext());
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1,
+                    list);
+            listview.setAdapter(adapter);
+
+            listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    String tid = (String) listview.getItemAtPosition(position);
+                    //Starting a new Intent
+                    Intent nextScreen = new Intent(getApplicationContext(), InboxActivity.class);
+                    nextScreen.putExtra("thread_id", tid);
+                    startActivity(nextScreen);
+                }
+            });
+            cur.close();
+        }
     }
 
 
