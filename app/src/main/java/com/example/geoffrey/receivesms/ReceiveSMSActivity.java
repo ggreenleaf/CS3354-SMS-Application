@@ -45,7 +45,7 @@ public class ReceiveSMSActivity extends Activity {
 //            }
 //        });
 
-        Cursor cur = getContentResolver().query(Uri.parse("content://sms/conversations"),null,null,null,null);
+        Cursor cur = getContentResolver().query(Uri.parse("content://sms/conversations"),null,null,null,"date DESC");
 
         if (cur.getCount() == 0 ) {
             cur.close();
