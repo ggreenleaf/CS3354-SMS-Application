@@ -26,7 +26,7 @@ public class TextMessageReceiver extends BroadcastReceiver {
         }
 
          Toast.makeText(context,sms[0].getDisplayMessageBody(),Toast.LENGTH_SHORT ).show();
-
+         
 //        throw new UnsupportedOperationException("Not yet implemented");
     }
 

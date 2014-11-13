@@ -8,11 +8,18 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Telephony;
+import android.telephony.SmsManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -29,36 +36,46 @@ public class InboxActivity extends Activity {
     private static String searchString = "";
     private static String selectionClause = "address = ?";
     private static ArrayList<String> convo = new ArrayList<String>();
+    private static ListView msgListview;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_inbox);
         Bundle b = getIntent().getExtras();
         tid = b.getString("thread_id");
-        inbox = (TextView)findViewById(R.id.inboxView);
-//        String [] mSelectionArgs =  {""};
-//        String mSearchString = tid;
+        msgListview = (ListView)findViewById(R.id.msg_list);
+        Button replyBtn = (Button)findViewById(R.id.replyButton);
+        //displaying the conversations
 
-
-//        selectionArgs[0] = tid;
-
-//        Cursor cur = getContentResolver().query(Uri.parse(INBOX_URI),null,selectionClause,selectionArgs,null);
-//        cur.moveToFirst();
-//        for (int i=0; i<cur.getColumnCount(); i++)
-//            Log.e(cur.getColumnName(i),"colInfo");
-//        do {
-//            String msgData = "";
-//            //idx 2= address idx 12 = "body"
-//            msgData += cur.getString(4) + " " + cur.getString(SMS_BODY) + "\n";
-//
-//            inbox.setTextColor(Color.BLUE);
-//            inbox.append(msgData);
-//        }while(cur.moveToNext());
-//        cur.close();
-        //getSentMessages();
         convo = getConversationMessages();
-       for(String msg: convo)
-           inbox.append(msg+"\n");
+      // for(String msg: convo)
+      //     inbox.append(msg+"\n");
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(),
+                            android.R.layout.simple_list_item_1, convo);
+
+        msgListview.setBackgroundColor(Color.BLACK);
+        msgListview.setAdapter(adapter);
+        msgListview.setSelection(convo.size());
+        //add listener for reply button
+        replyBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                   String number = tid;
+                   EditText textInput = (EditText)findViewById(R.id.editText);
+                   String msg = textInput.getText().toString();
+                   textInput.setText("");
+                   sendSMSMessage(number, msg);
+                   v.invalidate(); //should refresh
+                   finish();
+                   startActivity(getIntent());
+            }
+        });
+
+
+
+
+
     }
 
     @Override
@@ -82,7 +99,7 @@ public class InboxActivity extends Activity {
 
         return super.onOptionsItemSelected(item);
     }
-    //Returns the messages sent to the conversation with id:thread_id
+    //Returns the messages sent to the conversation with id:thread_id (phone number)
 
     protected ArrayList<String> getConversationMessages() {
         Uri inboxUri = Uri.parse(INBOX_URI);
@@ -90,30 +107,20 @@ public class InboxActivity extends Activity {
 //        MergeCursor c = new MergeCursor();
         ArrayList<String> messages = new ArrayList<String>();
         selectionArgs[0] = tid;
-        Cursor curIn = getContentResolver().query(inboxUri, null, selectionClause, selectionArgs, null);
-        Cursor curOut = getContentResolver().query(outboxUri, null, selectionClause, selectionArgs, null);
-//
-//        if (curIn.getCount() != 0) {
-//            curIn.moveToFirst();
-//            do {
-//                messages.add("I----"+curIn.getString(4) + " " + curIn.getString(SMS_BODY));
-//            } while (curIn.moveToNext());
-//        }
-//        curIn.close();
-//
-//        if (curOut.getCount() != 0) {
-//            curOut.moveToFirst();
-//            do {
-//                messages.add("O----"+curOut.getString(4) + " " + curOut.getString(SMS_BODY));
-//            } while (curOut.moveToNext());
-//        }
-//        curOut.close();
-
+        //probably a better way to query both inbox and outbox
+        Cursor curIn = getContentResolver().query(inboxUri, null, selectionClause, selectionArgs, "DATE desc");
+        Cursor curOut = getContentResolver().query(outboxUri, null, selectionClause, selectionArgs, "Date desc");
+        for (int i=0; i<curIn.getColumnCount();i++)
+        {
+            Log.e(curIn.getColumnName(i),"colName");
+        }
+        //iterate through both queries and add text body to
+        //the end of an ArrayList sorted by date
         curIn.moveToFirst(); curOut.moveToFirst();
         while(!curIn.isClosed() || !curOut.isClosed())
         {
             String msg = "";
-            String iTime = "-1";
+            String iTime = "-1"; //use negative one to compare if one cursor is closed
             String oTime = "-1";
 
             if (!curIn.isClosed()) {
@@ -136,7 +143,7 @@ public class InboxActivity extends Activity {
             {
                 if (!curIn.isClosed()) {
                     msg = curIn.getString(SMS_BODY);
-                    messages.add(msg+" "+iTime);
+                    messages.add(0, msg);
                     if (curIn.isLast()) {
                         curIn.close();
                         continue;
@@ -147,8 +154,8 @@ public class InboxActivity extends Activity {
             }
             else {
                 if (!curOut.isClosed()) {
-                    msg = curOut.getString(SMS_BODY);
-                    messages.add(msg+" "+oTime);
+                    msg = "\t\t\t" + curOut.getString(SMS_BODY);
+                    messages.add(0, msg);
                     if (curOut.isLast()) {
                         curOut.close();
                         continue;
@@ -159,8 +166,22 @@ public class InboxActivity extends Activity {
             }
         }
 
-
     return messages;
+    }
+
+    protected void sendSMSMessage(String number, String textBody)
+    {
+        SmsManager sms = SmsManager.getDefault();
+        try {
+            sms.sendTextMessage(number, null, textBody, null, null);
+        }
+        catch(Exception e)
+        {
+            Log.e(e.toString(),"exception ");
+            Toast.makeText(getApplicationContext(),
+                    "SMS failed, please try again.",
+                    Toast.LENGTH_LONG).show();
+        }
     }
 
 }

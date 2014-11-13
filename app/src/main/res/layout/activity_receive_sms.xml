@@ -3,7 +3,7 @@
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    >
+    android:weightSum="1">
     <TextView
         android:id="@+id/messageBox"
         android:text=""
@@ -13,9 +13,16 @@
 
     <ListView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/convoListView" />
+        android:layout_height="85dp"
+        android:id="@+id/convoListView"
+        android:layout_weight="0.90" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="New Message"
+        android:id="@+id/newMessageBtn"
+        android:layout_gravity="right" />
 
 
 </LinearLayout>

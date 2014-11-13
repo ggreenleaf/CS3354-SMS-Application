@@ -35,6 +35,10 @@
             android:name="com.example.geoffrey.receivesms.InboxActivity"
             android:label="@string/title_activity_inbox" >
         </activity>
+        <activity
+            android:name="com.example.geoffrey.receivesms.SendSMSActivity"
+            android:label="@string/title_activity_send_sms" >
+        </activity>
     </application>
 
 </manifest>
